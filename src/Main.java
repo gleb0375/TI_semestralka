@@ -7,44 +7,9 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws IOException {
-        Main main = new Main();
-        System.out.println(main.parseFile("file.txt"));
-
-        String[] test = new String[3];
-        test[0] = "rrrrrrrr";
-        test[1] = "aaaaaaaaaa";
-        test[2] = "bbbbbbbbbbbbb";
-
-        main.writeToFile(test);
-    }
-
-    public String[] parseFile(String path) throws IOException {
-        String[] array = new String[50];
-        String line;
-        int i = 0;
-
-        BufferedReader bf = new BufferedReader(
-                new FileReader(path));
-
-        line = bf.readLine();
-
-        while (line != null){
-            array[i] = line;
-            line = bf.readLine();
-            i++;
-        }
-        bf.close();
-
-        return array;
-    }
-
-    public void writeToFile(String[] array) throws IOException {
-        String fileName = "output.txt";
-        BufferedWriter writer = new BufferedWriter(new FileWriter(fileName));
-        for (int i = 0; i < array.length; i++){
-            writer.write(array[i] + "\n");
-        }
-        writer.close();
+        Parser p = new Parser("file.txt");
+        p.parseFile(p.getDataList());
+        p.produceEntities();
     }
 
     /*public boolean isG3RP() throws FileNotFoundException {
