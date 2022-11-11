@@ -1,2 +1,6 @@
-S->bA|sF
-A->aD|gD|
+S->$|aS|bF
+F->aE|bD
+E->aE|bC
+D->$|bG
+C->$|aS|bG
+G->bD
