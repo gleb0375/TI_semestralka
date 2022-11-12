@@ -8,8 +8,9 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Parser p = new Parser("file.txt");
-        p.parseFile(p.getDataList());
+        p.parseFile();
         p.produceEntities();
+        p.createNKAR();
     }
 
     /*public boolean isG3RP() throws FileNotFoundException {
@@ -25,26 +26,5 @@ public class Main {
     }
     return true;
     }*/
-
-    /*public char[] createTable() throws FileNotFoundException {
-        char[] chars = parseFile("file.txt");
-        char[] table;
-        System.out.println("    *   |   a   |   b   |");
-        for (int i = 0; i < chars.length - 1; i++){
-           if (chars[i+1] == '-') {
-               System.out.print("     " + chars[i]);}
-
-           if (chars[i] == 'a') {
-               System.out.print("      " + chars[i + 1]);
-
-           }
-           if (chars[i]== 'b')
-               System.out.println("       " +chars[i+1]);
-        }
-
-        return chars;
-    }*/
-
-
 
 }
