@@ -10,4 +10,9 @@ public class Entity {
         this.key = key;
         this.map = new HashMap();
     }
+
+    @Override
+    public String toString() {
+        return key;
+    }
 }
