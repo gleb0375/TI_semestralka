@@ -11,20 +11,22 @@ public class Parser {
     private List<Entity> entitiesList;
     private List<String> connectionsList;
     private Set<Character> transitionsList;
-    private Set<Entity> outEnitiesList;
+    private Set<Entity> outEnitiesSet;
     private Queue<List<Entity>> queueForNKAR;
     private List<NKAR> createdNKARSList;
     private List<NKAR> processedNKARSlist;
+    private Set<NKAR> outNKARSet;
 
     public Parser(String fileName) throws FileNotFoundException {
         this.dataList = this.readFile(fileName);
         this.entitiesList = new ArrayList();
         this.connectionsList = new ArrayList();
         this.transitionsList = new LinkedHashSet<>();
-        this.outEnitiesList = new LinkedHashSet<>();
+        this.outEnitiesSet = new LinkedHashSet<>();
         this.queueForNKAR = new LinkedList<>();
         this.createdNKARSList = new ArrayList<>();
         this.processedNKARSlist = new ArrayList<>();
+        this.outNKARSet = new LinkedHashSet<>();
     }
 
     public List<String> readFile(String fileName) throws FileNotFoundException {
@@ -40,17 +42,46 @@ public class Parser {
         return list;
     }
 
-    public void writeToFile(List<String> listOfStrings, String outputFileName) throws IOException {
+    public void writeToFile(List<NKAR> listOfNKARS, Set<Character> setOfTransions, String outputFileName) throws IOException {
         System.out.println("[DEBUG] Start file writing.");
         BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName));
-        listOfStrings.forEach((element) -> {
+        writer.write("G3PR\n" + listOfNKARS.size() + "\n" + getTerminalSymbolsCount() + "\n");
+        listOfNKARS.forEach((nkar) -> {
             try {
-                writer.write(element + "\n");
-            } catch (IOException var3) {
-                var3.printStackTrace();
+                writer.write(nkar + ": " );
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            for (Character transition : setOfTransions) {
+                if (nkar.map.get(transition) != null) {
+                    nkar.map.get(transition).value.forEach(
+                            v -> {
+                                try {
+                                    writer.write(String.valueOf(v));
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                    );
+                    try {
+                        writer.write(" ");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            try {
+                writer.write("\n");
+            } catch (IOException e) {
+                e.printStackTrace();
             }
 
         });
+        writer.write("1 " + beginEntity + "\n");
+        writer.write(String.valueOf(outNKARSet.size()));
+        for(NKAR outNKAR : outNKARSet) {
+            writer.write(" " +outNKAR );
+        }
         writer.close();
         System.out.println("[DEBUG] End file writing.");
     }
@@ -111,14 +142,10 @@ public class Parser {
                                 .findAny()
                                 .orElse(null));
             } else {
-                outEnitiesList.add(entity);
+                outEnitiesSet.add(entity);
             }
         }
 
-    }
-
-    public List<String> getDataList() {
-        return this.dataList;
     }
 
     public void createNKAR() {
@@ -128,6 +155,15 @@ public class Parser {
         while (!queueForNKAR.isEmpty()) {
             produceStackEntity(queueForNKAR.poll());
         }
+        createdNKARSList.forEach(
+                nkar -> nkar.value.forEach(
+                        entity -> {
+                            outEnitiesSet.forEach( outEntity -> {
+                                if (entity.equals(outEntity)) outNKARSet.add(nkar);
+                            });
+                        }
+                )
+        );
 
     }
 
@@ -176,4 +212,15 @@ public class Parser {
             processedNKARSlist.add(nkar);
     }
 
+    public List<NKAR> getProcessedNKARSlist() {
+        return processedNKARSlist;
+    }
+
+    public Set<Character> getTransitionsList() {
+        return transitionsList;
+    }
+
+    public Integer getTerminalSymbolsCount() {
+        return terminalSymbolsCount;
+    }
 }

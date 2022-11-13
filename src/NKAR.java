@@ -10,4 +10,13 @@ public class NKAR {
         this.value = value;
         this.map = new HashMap<>();
     }
+
+    @Override
+    public String toString() {
+        String out = new String();
+        for (Entity ent : value) {
+            out += ent.key;
+        }
+        return out;
+    }
 }
