@@ -3,16 +3,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Parser {
-    private String gramar;
-    private Integer nonterminalSymbolsCount;
-    private Integer terminalSybolsCount;
+    private String grammar;
+    private Integer nonTerminalSymbolsCount;
+    private Integer terminalSymbolsCount;
     private Entity beginEntity;
     private List<String> dataList;
     private List<Entity> entitiesList;
     private List<String> connectionsList;
     private Set<Character> transitionsList;
     private Set<Entity> outEnitiesList;
-    private Stack<List<Entity>> stackForNKAR;
+    private Queue<List<Entity>> queueForNKAR;
+    private List<NKAR> createdNKARSList;
+    private List<NKAR> processedNKARSlist;
 
     public Parser(String fileName) throws FileNotFoundException {
         this.dataList = this.readFile(fileName);
@@ -20,7 +22,9 @@ public class Parser {
         this.connectionsList = new ArrayList();
         this.transitionsList = new LinkedHashSet<>();
         this.outEnitiesList = new LinkedHashSet<>();
-        this.stackForNKAR = new Stack<>();
+        this.queueForNKAR = new LinkedList<>();
+        this.createdNKARSList = new ArrayList<>();
+        this.processedNKARSlist = new ArrayList<>();
     }
 
     public List<String> readFile(String fileName) throws FileNotFoundException {
@@ -52,9 +56,9 @@ public class Parser {
     }
 
     public void parseFile() {
-        this.gramar = dataList.get(0);
-        this.nonterminalSymbolsCount = Integer.valueOf(dataList.get(1));
-        this.terminalSybolsCount = Integer.valueOf(dataList.get(2));
+        this.grammar = dataList.get(0);
+        this.nonTerminalSymbolsCount = Integer.valueOf(dataList.get(1));
+        this.terminalSymbolsCount = Integer.valueOf(dataList.get(2));
         // Игнорим первые четыре строки, ибо это информационные строки, а затем делим на до стрелки и после, убирая пробелы
         for(int i = 4; i < dataList.size(); ++i) {
             String[] s = (dataList.get(i)).replaceAll("\\s+", "").split("->");
@@ -90,8 +94,7 @@ public class Parser {
         //отсортирует конекшены
         Arrays.sort(entityConnectionsArray);
 
-        for(int i = 0; i < entityConnectionsArray.length; ++i) {
-            String connection = entityConnectionsArray[i];
+        for (String connection : entityConnectionsArray) {
             char connectionChar = connection.charAt(0);
             if (connectionChar != '$') {
                 // если мапа пустая, то создаться ключ + лист к этому ключи, в который в дальнейшем будет что-то попощеться
@@ -121,8 +124,53 @@ public class Parser {
     public void createNKAR() {
         List<Entity> list = new ArrayList<>();
         list.add(beginEntity);
-        stackForNKAR.add(list);
-        NKAR nkar = new NKAR(list);
+        queueForNKAR.add(list);
+        while (!queueForNKAR.isEmpty()) {
+            produceStackEntity(queueForNKAR.poll());
+        }
 
     }
+
+    public void produceStackEntity(List<Entity> stackElement ) {
+        NKAR nkar = null;
+        if (createdNKARSList.isEmpty() ||
+                createdNKARSList.stream()
+                        .noneMatch(nkarStreamElement -> nkarStreamElement.value.equals(stackElement))) {
+        nkar = new NKAR(stackElement);
+        } else if (processedNKARSlist.stream()
+                .noneMatch(nkarStreamElement2 -> nkarStreamElement2.value.equals(stackElement))) {
+            for (NKAR nkarElem : createdNKARSList) {
+                if (nkarElem.value.equals(stackElement)){
+                    nkar = nkarElem;
+                    break;
+                }
+            }
+        } else {
+            return;
+        }
+        if(createdNKARSList.stream()
+                .noneMatch(nkarStreamElement -> nkarStreamElement.value.equals(stackElement))) createdNKARSList.add(nkar);
+            NKAR finalNkar = nkar;
+            transitionsList.forEach(transition ->
+            {
+                if (finalNkar.map.get(transition) == null) {
+                    Set<Entity> set = new HashSet<>();
+                    stackElement.forEach(element -> {
+                        if (element.map.get(transition) != null)
+                        element.map.get(transition).forEach(mapValue -> set.add(mapValue));
+                    });
+                    if (!set.isEmpty()) {
+                        NKAR temp = new NKAR(set.stream().toList());
+                        finalNkar.map.put(transition, temp);
+                        if (createdNKARSList.stream()
+                                .noneMatch(listElement -> listElement.value.equals(set))) {
+                            createdNKARSList.add(temp);
+                        }
+                        queueForNKAR.add(set.stream().toList());
+                    }
+                }
+            });
+            processedNKARSlist.add(nkar);
+    }
+
 }
