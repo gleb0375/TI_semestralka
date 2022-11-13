@@ -1,3 +1,4 @@
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -7,5 +8,6 @@ public class NKAR {
 
     public NKAR(List<Entity> value) {
         this.value = value;
+        this.map = new HashMap<>();
     }
 }
