@@ -160,7 +160,10 @@ public class Parser {
                         element.map.get(transition).forEach(mapValue -> set.add(mapValue));
                     });
                     if (!set.isEmpty()) {
-                        NKAR temp = new NKAR(set.stream().toList());
+                        NKAR temp = createdNKARSList.stream()
+                                .filter(nkarStreamElement -> nkarStreamElement.value.equals(set.stream().toList()))
+                                .findAny()
+                                .orElse(new NKAR(set.stream().toList()));
                         finalNkar.map.put(transition, temp);
                         if (createdNKARSList.stream()
                                 .noneMatch(listElement -> listElement.value.equals(set))) {
