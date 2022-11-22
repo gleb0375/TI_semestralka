@@ -1,6 +1,7 @@
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Parser {
     private String grammar;
@@ -16,6 +17,7 @@ public class Parser {
     private List<NKAR> createdNKARSList;
     private List<NKAR> processedNKARSlist;
     private Set<NKAR> outNKARSet;
+    private Entity absorbeEntity;
 
     public Parser(String fileName) throws FileNotFoundException {
         this.dataList = this.readFile(fileName);
@@ -86,6 +88,39 @@ public class Parser {
         System.out.println("[DEBUG] End file writing.");
     }
 
+    public void writeToFile2(List<Entity> listOfEntities, Set<Character> setOfTransions, String outputFileName) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileName));
+        writer.write("G3PR\n" + listOfEntities.size() + "\n" + getTerminalSymbolsCount() + "\n");
+        for(Entity entity : listOfEntities) {
+            writer.write(entity.key + ": ");
+            for (Character transition : setOfTransions) {
+                if (entity.map.get(transition) == null) {
+                    writer.write(absorbeEntity.key + " ");
+                } else {
+                    entity.map.get(transition).forEach(mapEntity -> {
+                        try {
+                            writer.write(String.valueOf(mapEntity));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    writer.write(" ");
+                }
+            }
+            writer.write("\n");
+        }
+        writer.write("1 " + beginEntity + "\n");
+        writer.write(outEnitiesSet.size() + " ");
+        outEnitiesSet.forEach( out -> {
+            try {
+                writer.write(out.key + " ");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+        writer.close();
+    }
+
     public void parseFile() {
         this.grammar = dataList.get(0);
         this.nonTerminalSymbolsCount = Integer.valueOf(dataList.get(1));
@@ -116,7 +151,18 @@ public class Parser {
                 .findAny()
                 .orElse(null);
         }
-
+        List<Character> sortedList = transitionsList.stream()
+                .sorted().toList();
+        transitionsList = new LinkedHashSet<>(sortedList);
+         int ascii = (entitiesList.get(entitiesList.size() - 1).key.charAt(0)) + 1;
+         Entity absorbeEntity = new Entity(""+ ((char) ascii));
+         ArrayList<Entity> absorbeList = new ArrayList<>();
+         absorbeList.add(absorbeEntity);
+         transitionsList.forEach(transition -> {
+            absorbeEntity.map.put(transition, absorbeList);
+         });
+        this.absorbeEntity = absorbeEntity;
+        entitiesList.add(absorbeEntity);
     }
 
     public void produceEntity(Entity entity, String connections) {
@@ -210,6 +256,10 @@ public class Parser {
                 }
             });
             processedNKARSlist.add(nkar);
+    }
+
+    public List<Entity> getEntitiesList() {
+        return entitiesList;
     }
 
     public List<NKAR> getProcessedNKARSlist() {

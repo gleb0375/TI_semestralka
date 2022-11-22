@@ -1,13 +1,8 @@
 G3PR
 2
 3
-S
-S  -> bS | aS1 | aS2
-S1 -> bA
-S2 -> aS3
-S3 -> $
-A  -> bA1 | aS  | bB1 | aB2
-A1 -> bA
-B  -> aS | bB1 | aB2
-B1 -> bA
-B2 -> $
+A
+A  -> aA | aB | $
+B -> aC | cD
+C -> bC | $
+D -> $

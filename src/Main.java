@@ -12,6 +12,7 @@ public class Main {
         p.produceEntities();
         p.createNKAR();
         p.writeToFile(p.getProcessedNKARSlist(), p.getTransitionsList(), "out.txt");
+        p.writeToFile2(p.getEntitiesList(), p.getTransitionsList(), "out2.txt");
     }
 
     /*public boolean isG3RP() throws FileNotFoundException {
