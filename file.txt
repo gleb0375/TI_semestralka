@@ -1,8 +1,0 @@
-G3PR
-2
-3
-A
-A  -> aA | aB | $
-B -> aC | cD
-C -> bC | $
-D -> $

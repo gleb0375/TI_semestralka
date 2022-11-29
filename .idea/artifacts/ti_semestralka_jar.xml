@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ti_semestralka:jar">
+    <output-path>$PROJECT_DIR$/../../../../java</output-path>
+    <root id="archive" name="ti_semestralka.jar">
+      <element id="module-output" name="ti_semestralka" />
+    </root>
+  </artifact>
+</component>
